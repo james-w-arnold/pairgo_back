@@ -40,4 +40,56 @@ def update_locations(locations, instance):
                                              location__in=potential_to_delete,
                                              current=False).delete()
 
+        if potential_to_add:
+            for item in potential_to_add:
+                CandidateLocation.objects.create(candidate=instance,
+                                                 location=item,
+                                                 current=False)
+
+
+def update_skills(skills, instance):
+
+    #@todo: add support for categories within skills - soft/hard etc
+
+    def parse_skills(skill_collection):
+        skills = skill_collection.get('skills')
+        skill_names = []
+        for item in skills:
+            skill_names.append(item['title'])
+
+    skill_titles = parse_skills(instance)
+    skills_to_add = instance.pop('skills', {})
+
+
+    if skills_to_add:
+
+        #get the existing skills
+        candidate_skills_all = CandidateSkill.objects.filter(candidate=instance)
+        candidate_skills = set(candidate_skills_all)
+        all_skills = Skill.objects.all()
+        received_skills = set()
+
+
+        for skill in skill_titles:
+
+            skill_to_add = Skill.objects.get_or_create(title=skill)
+            received_skills.add(skills_to_add)
+
+        delete_skills = candidate_skills - received_skills
+        add_skills = received_skills - candidate_skills
+
+        if delete_skills:
+            candidate_skills_all.filter(skill__name__in=delete_skills).delete()
+
+        if add_skills:
+            for skill in add_skills:
+                CandidateSkill.objects.create(candidate=instance, skill=skill)
+
+
+
+
+
+
+
+
 
