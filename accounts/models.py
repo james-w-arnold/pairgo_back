@@ -92,6 +92,12 @@ class Candidate(models.Model):
         blank=True
     )
 
+    interests = models.ManyToManyField(
+        commons.Interest,
+        through='CandidateInterest',
+        blank=True
+    )
+
     user = models.OneToOneField(
         'User',
         on_delete=models.CASCADE
@@ -142,9 +148,19 @@ class CandidateSkill(models.Model):
     )
     skill = models.ForeignKey(
         commons.Skill,
-        on_delete=models.CASCADE
+        on_delete=models.PROTECT
     )
 
+class CandidateInterest(models.Model):
+
+    candidate = models.ForeignKey(
+        'Candidate',
+        on_delete=models.CASCADE
+    )
+    interest = models.ForeignKey(
+        commons.Interest,
+        on_delete=models.PROTECT
+    )
 
 class CandidatePsychometrics(models.Model):
     """

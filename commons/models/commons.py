@@ -10,6 +10,13 @@ class Industry(models.Model):
     def __str__(self):
         return self.name
 
+class Interest(models.Model):
+
+    name = models.CharField(max_length=100)
+    category = models.TextField()
+
+    def __str__(self):
+        return "{}".format(self.name)
 class Location(models.Model):
     """
     Descriptive model of a location

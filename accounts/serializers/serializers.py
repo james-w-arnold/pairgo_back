@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate
 from django.utils.translation import ugettext_lazy as lazy
-from accounts.models import User, CandidateLocation, CandidateSkill, CandidatePsychometrics, CandidateEducation
-from commons.models.commons import Location, Skill
+from accounts.models import User, CandidateLocation, CandidateSkill, CandidatePsychometrics, CandidateEducation, CandidateInterest, Candidate
+from commons.models.commons import Location, Skill, Interest
 
 from rest_framework import serializers
 
@@ -91,7 +91,7 @@ class CandidateLocationSerializer(serializers.Serializer):
 
     def to_internal_value(self, data):
         current_location = data.get('current', {})
-        potential_locations = data.get('desired', [])
+        potential_locations = data.get('potential', [])
 
         current = {}
         potential = []
@@ -109,7 +109,7 @@ class CandidateLocationSerializer(serializers.Serializer):
     @staticmethod
     def __parse_location(location):
         geo = location.get('geo', {})
-        data = {"title": location.get('ti   tle', ''),
+        data = {"title": location.get('title', ''),
                 'lat': geo.get('lat'),
                 'lon': geo.get('lon')}
         serializer = LocationSerializer(data=data)
@@ -126,15 +126,47 @@ class SkillSerializer(serializers.ModelSerializer):
         exclude = ('id', 'category')
 
 class CandidateSkillSerializer(serializers.Serializer):
-    def to_representation(self, instance):
-        candidate_skills = CandidateSkill.objects.filter(candidate__id=obj.instance.id)
+    def to_representation(self, object):
+        skills = CandidateSkill.objects.filter(candidate__id=object.instance.id)
 
-        return {'skills': candidate_skills}
+        return {"skills" : skills}
+
+    def to_internal_value(self, data):
+        skill_data = data.get('skills', [])
+
+        return {"skills" : skill_data}
+
 
 class PsychometricSerializer(serializers.ModelSerializer):
     class Meta:
         model = CandidatePsychometrics
         exclude = ('id',)
+
+class InterestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Interest
+        exclude = ('id',)
+
+class CandidateInterestSerializer(serializers.Serializer):
+    def to_representation(self, obj):
+        candidate_interests = CandidateInterest.objects.filter(candidate__id=obj.instance.id)
+        _interests = []
+
+        if candidate_interests.exists():
+            for item in candidate_interests:
+                _interests.append(item)
+
+        return {"interests" : _interests}
+
+    def to_internal_value(self, data):
+        interest_data = data.get('interests', [])
+        _interests = []
+
+        if interest_data:
+            for item in interest_data:
+                _interests.append(item)
+
+        return {"interests" : _interests}
 
 class EducationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -148,4 +180,35 @@ class CandidateSerializer(serializers.ModelSerializer):
     locations = CandidateLocationSerializer(required=True)
     educations = EducationSerializer(many=True, required=True)
     skills = CandidateSkillSerializer()
-    psychometrics =
+    interests = CandidateInterestSerializer()
+    psychometrics = PsychometricSerializer()
+
+    class Meta:
+        model = Candidate
+        fields = '__all__'
+
+    def create(self, validated_data):
+        return CandidateSerializer.__update_or_create(validated_data)
+
+    def update(self, validated_data, instance):
+        return CandidateSerializer.__update_or_create(validated_data, instance)
+
+    @staticmethod
+    def __update_or_create(self, validated_data, instance=None):
+        """
+        Private method to override the default creation methods in the default update and create methods
+        """
+        _locations = validated_data.pop('locations', {'current': {}, 'potential': []})
+        _skills = validated_data.pop({'skills' : []})
+        _interests = validated_data.pop({'interests': []})
+        _psychometrics = validated_data.pop({'psychometric_analysis': {}})
+
+        if instance is not None:
+            #updated an existing candidate
+            candidate = Candidate(id=instance.id, **validated_data)
+            candidate.save(force_update=True)
+        else:
+            #or create a new candidate
+            candidate = Candidate(**validated_data)
+            candidate.save(force_insert=True)
+
