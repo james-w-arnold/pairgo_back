@@ -57,9 +57,11 @@ def update_skills(skills, instance):
         for item in skills:
             skill_names.append(item['title'])
 
-    skill_titles = parse_skills(instance)
-    skills_to_add = instance.pop('skills', {})
+        return skill_names
 
+    skill_titles = parse_skills(instance)
+
+    skills_to_add = skills.get('skills', {})
 
     if skills_to_add:
 
@@ -87,9 +89,37 @@ def update_skills(skills, instance):
 
 
 
+def update_interests(interests, instance):
 
+    def parse_interests(interest_list):
+        _interests = interests.get('interests')
+        interest_names = []
 
+        for item in interest_list:
+            interest_names.append(item['name'])
 
+        return interest_names
 
+    interest_titles = parse_interests(interests)
+    received_interests = interests.pop('interests')
 
+    if received_interests:
 
+        candidate_interests_all = CandidateInterest.objects.filter(candidate=instance)
+        candidate_interests = set(candidate_interests_all)
+
+        received_interests_set = set()
+
+        for interest in interest_titles:
+            interest_to_add = Interest.objects.get_or_create(name=interest)
+            received_interests_set.add(interest_to_add)
+
+        interests_to_add = received_interests - candidate_interests
+        interests_to_delete = candidate_interests - received_interests
+
+        if interests_to_delete:
+            candidate_interests_all.filter(interest__name__in=interests_to_delete).delete()
+
+        if interests_to_add:
+            for interest in interest_to_add:
+                CandidateInterest.objects.create(candidate=instance, interest=interest)
