@@ -2,6 +2,9 @@ from django.contrib.auth import authenticate
 from django.utils.translation import ugettext_lazy as lazy
 from accounts.models import User, CandidateLocation, CandidateSkill, CandidatePsychometrics, CandidateEducation, CandidateInterest, Candidate
 from commons.models.commons import Location, Skill, Interest
+import accounts.tools.serializer_tools as st
+from django.core.exceptions import ValidationError
+import logging
 
 from rest_framework import serializers
 
@@ -108,16 +111,18 @@ class CandidateLocationSerializer(serializers.Serializer):
 
     @staticmethod
     def __parse_location(location):
-        geo = location.get('geo', {})
+
         data = {"title": location.get('title', ''),
-                'lat': geo.get('lat'),
-                'lon': geo.get('lon')}
+                'lat': location.get('lat'),
+                'lon': location.get('lon')}
         serializer = LocationSerializer(data=data)
 
         if serializer.is_valid():
             validated_data = serializer.validated_data
+            return validated_data
 
-        return validated_data
+        else:
+            return ValidationError('Incorrect Location Data')
 
 
 class SkillSerializer(serializers.ModelSerializer):
@@ -132,15 +137,14 @@ class CandidateSkillSerializer(serializers.Serializer):
         return {"skills" : skills}
 
     def to_internal_value(self, data):
-        skill_data = data.get('skills', [])
 
-        return {"skills" : skill_data}
+        return {"skills" : data}
 
 
 class PsychometricSerializer(serializers.ModelSerializer):
     class Meta:
         model = CandidatePsychometrics
-        exclude = ('id',)
+        exclude = ('id', 'user')
 
 class InterestSerializer(serializers.ModelSerializer):
     class Meta:
@@ -159,7 +163,7 @@ class CandidateInterestSerializer(serializers.Serializer):
         return {"interests" : _interests}
 
     def to_internal_value(self, data):
-        interest_data = data.get('interests', [])
+        interest_data = data
         _interests = []
 
         if interest_data:
@@ -171,7 +175,7 @@ class CandidateInterestSerializer(serializers.Serializer):
 class EducationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CandidateEducation
-        exclude = ('id',)
+        exclude = ('id', 'user')
 
 class CandidateSerializer(serializers.ModelSerializer):
     first_name = serializers.ReadOnlyField(source='user.first_name')
@@ -188,7 +192,11 @@ class CandidateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
+        logger = logging.getLogger(__name__)
+        logger.error(validated_data)
         return CandidateSerializer.__update_or_create(validated_data)
+
+
 
     def update(self, validated_data, instance):
         return CandidateSerializer.__update_or_create(validated_data, instance)
@@ -202,6 +210,7 @@ class CandidateSerializer(serializers.ModelSerializer):
         _skills = validated_data.pop({'skills' : []})
         _interests = validated_data.pop({'interests': []})
         _psychometrics = validated_data.pop({'psychometric_analysis': {}})
+        _educations = validated_data.pop('educations', {})
 
         if instance is not None:
             #updated an existing candidate
@@ -211,4 +220,13 @@ class CandidateSerializer(serializers.ModelSerializer):
             #or create a new candidate
             candidate = Candidate(**validated_data)
             candidate.save(force_insert=True)
+
+        st.update_locations(_locations, candidate)
+        st.update_skills(_skills, candidate)
+        st.update_interests(_interests, candidate)
+        st.update_psychometrics(_psychometrics, candidate)
+
+        if _educations:
+            st.update_educations(_educations, candidate)
+        return candidate
 

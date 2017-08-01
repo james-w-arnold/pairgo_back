@@ -1,6 +1,8 @@
 from django.shortcuts import render
 import logging
 
+from django.core.exceptions import ValidationError
+
 from rest_framework import status, viewsets, mixins
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -48,13 +50,19 @@ class CreateCandidateView(ModelViewSet):
     """
     permission_classes = (IsAuthenticated, permissions.IsOwner)
     queryset = Candidate.objects.all()
-    #serializer_class =
+    serializer_class = serializers.CandidateSerializer
 
     def perform_create(self, serializer):
         """
         :param serializer:
         :return:
         """
+        queryset = Candidate.objects.filter(user=self.request.user)
+        if queryset.exists():
+            raise ValidationError('An account already exists for this user.')
+        serializer.save(user=self.request.user)
+        self.index(serializer.data, self.request.user.id)
+
 
 
 

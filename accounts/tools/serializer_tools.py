@@ -123,3 +123,26 @@ def update_interests(interests, instance):
         if interests_to_add:
             for interest in interest_to_add:
                 CandidateInterest.objects.create(candidate=instance, interest=interest)
+
+
+def update_psychometrics(psychometrics, instance):
+
+    if psychometrics:
+        CandidatePsychometrics.objects.create(
+            extroversion=psychometrics['extroversion'],
+            neuroticism=psychometrics['neuroticism'],
+            openness=psychometrics['openness'],
+            conscientiousness=psychometrics['conscientiousness'],
+            agreeableness=psychometrics['agreeableness'],
+            candidate=instance
+        )
+
+
+def update_educations(educations, instance):
+
+    if instance is not None:
+        CandidateEducation.objects.filter(user=instance).delete()
+
+    for edu in educations:
+        edu['user'] = instance
+        CandidateEducation.objects.update_or_create(**edu)
