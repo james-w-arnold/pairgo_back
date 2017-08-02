@@ -1,5 +1,5 @@
 import copy
-
+import logging
 from accounts.models import *
 from commons.models.commons import Location, Skill, Interest
 
@@ -50,38 +50,37 @@ def update_locations(locations, instance):
 def update_skills(skills, instance):
 
     #@todo: add support for categories within skills - soft/hard etc
+    #def parse_skills(skill_collection):
+     #   skills = skill_collection.get('skills')
+      #  skill_names = []
+       # for item in skills:
+        #    skill_names.append(item['title'])
 
-    def parse_skills(skill_collection):
-        skills = skill_collection.get('skills')
-        skill_names = []
-        for item in skills:
-            skill_names.append(item['title'])
+        #return skill_names
 
-        return skill_names
+    #skill_titles = parse_skills(skills)
 
-    skill_titles = parse_skills(instance)
-
-    skills_to_add = skills.get('skills', {})
+    skills_to_add = skills
 
     if skills_to_add:
 
         #get the existing skills
         candidate_skills_all = CandidateSkill.objects.filter(candidate=instance)
         candidate_skills = set(candidate_skills_all)
-        all_skills = Skill.objects.all()
         received_skills = set()
 
 
-        for skill in skill_titles:
+        for skill in skills:
 
-            skill_to_add = Skill.objects.get_or_create(title=skill)
-            received_skills.add(skills_to_add)
+            skill_to_add, nada = Skill.objects.get_or_create(name=skill)
+            received_skills.add(skill_to_add)
 
         delete_skills = candidate_skills - received_skills
         add_skills = received_skills - candidate_skills
 
         if delete_skills:
-            candidate_skills_all.filter(skill__name__in=delete_skills).delete()
+            for skill in delete_skills:
+                candidate_skills_all.filter(skill__name=skill.skill.name).delete()
 
         if add_skills:
             for skill in add_skills:
@@ -91,17 +90,18 @@ def update_skills(skills, instance):
 
 def update_interests(interests, instance):
 
-    def parse_interests(interest_list):
-        _interests = interests.get('interests')
-        interest_names = []
+    #def parse_interests(interest_list):
+     #   _interests = interests.get('interests')
+      #  interest_names = []
+#
+ #       for item in interest_list:
+  #          interest_names.append(item['name'])
+#
+ #       return interest_names
 
-        for item in interest_list:
-            interest_names.append(item['name'])
 
-        return interest_names
-
-    interest_titles = parse_interests(interests)
-    received_interests = interests.pop('interests')
+    interest_titles = interests
+    received_interests = interests
 
     if received_interests:
 
@@ -111,17 +111,20 @@ def update_interests(interests, instance):
         received_interests_set = set()
 
         for interest in interest_titles:
-            interest_to_add = Interest.objects.get_or_create(name=interest)
+            interest_to_add, nada = Interest.objects.get_or_create(name=interest)
             received_interests_set.add(interest_to_add)
 
-        interests_to_add = received_interests - candidate_interests
-        interests_to_delete = candidate_interests - received_interests
+
+
+        interests_to_add = received_interests_set - candidate_interests
+        interests_to_delete = candidate_interests - received_interests_set
 
         if interests_to_delete:
-            candidate_interests_all.filter(interest__name__in=interests_to_delete).delete()
+            for interest in interests_to_delete:
+                candidate_interests_all.filter(interest__name=interest.interest.name).delete()
 
         if interests_to_add:
-            for interest in interest_to_add:
+            for interest in interests_to_add:
                 CandidateInterest.objects.create(candidate=instance, interest=interest)
 
 

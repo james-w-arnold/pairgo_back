@@ -75,6 +75,7 @@ class Candidate(models.Model):
     Model to describe a student candidate within the system
     """
     id = models.BigIntegerField(primary_key=True,
+                                default=generate_id(),
                                 editable=False)
     about = models.TextField(blank=True)
     birth_date = models.DateField(null=True)
@@ -98,7 +99,7 @@ class Candidate(models.Model):
         blank=True
     )
 
-    user = models.OneToOneField(
+    user = models.ForeignKey(
         'User',
         on_delete=models.CASCADE
     )

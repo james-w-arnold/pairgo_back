@@ -133,12 +133,12 @@ class SkillSerializer(serializers.ModelSerializer):
 class CandidateSkillSerializer(serializers.Serializer):
     def to_representation(self, object):
         skills = CandidateSkill.objects.filter(candidate__id=object.instance.id)
-
-        return {"skills" : skills}
+        _skills = [skill.skill.name for skill in skills]
+        return _skills
 
     def to_internal_value(self, data):
 
-        return {"skills" : data}
+        return data
 
 
 class PsychometricSerializer(serializers.ModelSerializer):
@@ -154,13 +154,10 @@ class InterestSerializer(serializers.ModelSerializer):
 class CandidateInterestSerializer(serializers.Serializer):
     def to_representation(self, obj):
         candidate_interests = CandidateInterest.objects.filter(candidate__id=obj.instance.id)
-        _interests = []
+        _interests = [interest.interest.name for interest in candidate_interests]
 
-        if candidate_interests.exists():
-            for item in candidate_interests:
-                _interests.append(item)
 
-        return {"interests" : _interests}
+        return _interests
 
     def to_internal_value(self, data):
         interest_data = data
@@ -170,7 +167,7 @@ class CandidateInterestSerializer(serializers.Serializer):
             for item in interest_data:
                 _interests.append(item)
 
-        return {"interests" : _interests}
+        return _interests
 
 class EducationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -181,11 +178,11 @@ class CandidateSerializer(serializers.ModelSerializer):
     first_name = serializers.ReadOnlyField(source='user.first_name')
     last_name  = serializers.ReadOnlyField(source='user.last_name')
     email = serializers.ReadOnlyField(source='user.email')
-    locations = CandidateLocationSerializer(required=True)
-    educations = EducationSerializer(many=True, required=True)
+    locations = CandidateLocationSerializer(required=False)
+    educations = EducationSerializer(many=True, required=False)
     skills = CandidateSkillSerializer()
     interests = CandidateInterestSerializer()
-    psychometrics = PsychometricSerializer()
+    #psychometrics = PsychometricSerializer()
 
     class Meta:
         model = Candidate
@@ -194,23 +191,24 @@ class CandidateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         logger = logging.getLogger(__name__)
         logger.error(validated_data)
-        return CandidateSerializer.__update_or_create(validated_data)
+        logger.error(type(validated_data))
+        return CandidateSerializer.__update_or_create(validated_data=validated_data)
 
 
 
-    def update(self, validated_data, instance):
+    def update(self, instance, validated_data):
         return CandidateSerializer.__update_or_create(validated_data, instance)
 
     @staticmethod
-    def __update_or_create(self, validated_data, instance=None):
+    def __update_or_create(validated_data, instance=None):
         """
         Private method to override the default creation methods in the default update and create methods
         """
         _locations = validated_data.pop('locations', {'current': {}, 'potential': []})
-        _skills = validated_data.pop({'skills' : []})
-        _interests = validated_data.pop({'interests': []})
-        _psychometrics = validated_data.pop({'psychometric_analysis': {}})
-        _educations = validated_data.pop('educations', {})
+        _skills = validated_data.pop('skills', [])
+        _interests = validated_data.pop('interests', [])
+        _psychometrics = validated_data.pop('psychometrics', {})
+        _educations = validated_data.pop('educations', []   )
 
         if instance is not None:
             #updated an existing candidate
