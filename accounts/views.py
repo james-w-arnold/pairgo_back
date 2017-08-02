@@ -44,6 +44,10 @@ class UserRegistrationView(CreateAPIView):
     serializer_class = serializers.UserRegistrationSerializer
 
 
+class UserTypeView(ModelViewSet):
+    permission_classes = (IsAuthenticated)
+    serializer_class = serializers.UserTypeSerializer
+
 class CreateCandidateView(ModelViewSet):
     """
     Allows for creation of a candidate model

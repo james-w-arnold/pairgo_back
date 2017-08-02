@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate
 from django.utils.translation import ugettext_lazy as lazy
-from accounts.models import User, CandidateLocation, CandidateSkill, CandidatePsychometrics, CandidateEducation, CandidateInterest, Candidate
+from accounts.models import User, CandidateLocation, CandidateSkill, CandidatePsychometrics, CandidateEducation, CandidateInterest, Candidate, UserType
 from commons.models.commons import Location, Skill, Interest
 import accounts.tools.serializer_tools as st
 from django.core.exceptions import ValidationError
@@ -228,3 +228,16 @@ class CandidateSerializer(serializers.ModelSerializer):
             st.update_educations(_educations, candidate)
         return candidate
 
+
+class UserTypeSerializer(serializers.Serializer):
+    class Meta:
+        model = UserType
+        fields = '__all__'
+
+    def create(self, validated_data):
+        if validated_data['isCandidate'] and validated_data['isEmployer']:
+            return ValidationError("User cannot be both an employer an a candidate")
+        else:
+            userType = UserType(isCandidate=validated_data['isCandidate'],
+                                isEmployer=validated_data['isEmployer'],
+                                user=validated_data['user'])

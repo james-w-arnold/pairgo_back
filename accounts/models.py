@@ -69,6 +69,13 @@ class User(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
 
+class UserType(models.Model):
+    user = models.ForeignKey(
+        'User',
+        on_delete=models.CASCADE
+    )
+    isCandidate = models.BooleanField(default=False)
+    isEmployer  = models.BooleanField(default=False)
 
 class Candidate(models.Model):
     """

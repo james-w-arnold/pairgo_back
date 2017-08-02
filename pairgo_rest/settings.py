@@ -47,6 +47,7 @@ DJANGO_APPS = (
 PAIRGO_DJANGO_APPS = (
     'accounts',
     'commons',
+    'employers',
 )
 
 THIRD_PARTY_APPS = (
