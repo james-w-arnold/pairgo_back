@@ -46,7 +46,7 @@ def generate_id():
     """
     :return: A random ID to be used for the Primary key
     """
-    return random.getrandbits(63)
+    return random.getrandbits(53)
 
 class User(AbstractUser):
     """

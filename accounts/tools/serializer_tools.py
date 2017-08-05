@@ -149,3 +149,14 @@ def update_educations(educations, instance):
     for edu in educations:
         edu['user'] = instance
         CandidateEducation.objects.update_or_create(**edu)
+
+
+def assign_usertype(usertype, instance):
+    userType = UserType(user=instance)
+
+    if usertype == 'candidate':
+        userType.isCandidate = True
+    if usertype == 'employer':
+        userType.isEmployer = True
+
+    userType.save()

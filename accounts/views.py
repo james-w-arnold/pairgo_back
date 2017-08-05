@@ -13,7 +13,7 @@ from accounts.serializers import serializers
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 from accounts.permissions import permissions
-from accounts.models import Candidate
+from accounts.models import Candidate, UserType
 # Create your views here.
 
 class LoginView(ObtainAuthToken):
@@ -26,7 +26,6 @@ class LoginView(ObtainAuthToken):
         response = super(LoginView, self).post(request, *args, **kwargs)
         token = Token.objects.get(key=response.data['token'])
         #TODO: Add functionality to check which type user is
-
         return Response(
             {
                 'token': token.key,
@@ -45,14 +44,25 @@ class UserRegistrationView(CreateAPIView):
 
 
 class UserTypeView(ModelViewSet):
-    permission_classes = (IsAuthenticated)
+    permission_classes = (IsAuthenticated,)
     serializer_class = serializers.UserTypeSerializer
+    queryset = UserType.objects.all()
+    lookup_field = 'user'
+    logger = logging.getLogger(__name__)
+
+    def create(self, request, *args, **kwargs):
+        self.logger.error(request.data)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class CreateCandidateView(ModelViewSet):
     """
     Allows for creation of a candidate model
     """
-    permission_classes = (IsAuthenticated, permissions.IsOwner)
+    permission_classes = (IsAuthenticated, permissions.IsOwner, permissions.IsCandidateOrNeither)
     queryset = Candidate.objects.all()
     serializer_class = serializers.CandidateSerializer
 
@@ -64,6 +74,11 @@ class CreateCandidateView(ModelViewSet):
         queryset = Candidate.objects.filter(user=self.request.user)
         if queryset.exists():
             raise ValidationError('An account already exists for this user.')
+        else:
+            userType = UserType.objects.get(user=self.request.user)
+            userType.isCandidate = True
+            userType.save()
+
         serializer.save(user=self.request.user)
         self.index(serializer.data, self.request.user.id)
 

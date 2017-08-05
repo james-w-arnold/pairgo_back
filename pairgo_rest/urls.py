@@ -23,5 +23,5 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^accounts/', include('accounts.urls', namespace='accounts')),
     url(r'^swagger/$', schema_view),
-
+    url(r'^employers/' , include('employers.urls', namespace='employers')),
 ]

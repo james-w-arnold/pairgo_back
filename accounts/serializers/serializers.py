@@ -62,6 +62,22 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+class UserTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserType
+        fields = ('__all__')
+
+    def create(self, validated_data):
+        logger = logging.getLogger(__name__)
+        logger.error(validated_data)
+        userType = UserType(
+            user = validated_data['user'],
+            isCandidate = validated_data['isCandidate'],
+            isEmployer  = validated_data['isEmployer']
+        )
+        userType.save()
+
+        return userType
 
 class LocationSerializer(serializers.ModelSerializer):
     """
@@ -189,12 +205,7 @@ class CandidateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        logger = logging.getLogger(__name__)
-        logger.error(validated_data)
-        logger.error(type(validated_data))
         return CandidateSerializer.__update_or_create(validated_data=validated_data)
-
-
 
     def update(self, instance, validated_data):
         return CandidateSerializer.__update_or_create(validated_data, instance)
@@ -229,15 +240,4 @@ class CandidateSerializer(serializers.ModelSerializer):
         return candidate
 
 
-class UserTypeSerializer(serializers.Serializer):
-    class Meta:
-        model = UserType
-        fields = '__all__'
 
-    def create(self, validated_data):
-        if validated_data['isCandidate'] and validated_data['isEmployer']:
-            return ValidationError("User cannot be both an employer an a candidate")
-        else:
-            userType = UserType(isCandidate=validated_data['isCandidate'],
-                                isEmployer=validated_data['isEmployer'],
-                                user=validated_data['user'])

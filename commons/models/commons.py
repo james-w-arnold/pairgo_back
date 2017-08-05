@@ -1,14 +1,36 @@
 from django.db import models
 
-
 class Industry(models.Model):
     """
     Descriptive model of a type of industry
     """
-    name = models.TextField(unique=True)
+    industry_choices = (
+            ('AERO', 'Aerospace Industry'),
+            ('AGRI', 'Agriculture'),
+            ('CHEM', 'Chemical Industry'),
+            ('COMP', 'Computer Industry'),
+            ('CONS', 'Construction'),
+            ('DEFE', 'Defense Industry'),
+            ('EDUC', 'Education'),
+            ('ENER', 'Energy Industry'),
+            ('ENTE', 'Entertainment Industry'),
+            ('FINA', 'Financial Services'),
+            ('FOOD', 'Food Industry'),
+            ('HEAL', 'Healthcare Industry'),
+            ('HOSP', 'Hospitality Industry'),
+            ('INFO', 'Infomation Industry'),
+            ('MANU', 'Manufacturing Industry'),
+            ('MASS', 'Mass Media'),
+            ('TELE', 'Telecommunications Industry'),
+            ('TRAN', 'Transport Industry'),
+            ('WATE', 'Water Industry')
+        )
+
+    name = models.CharField(max_length=100)
+    category = models.CharField(max_length=100, choices=industry_choices, blank=True)
 
     def __str__(self):
-        return self.name
+        return "{}".format(self.name)
 
 class Interest(models.Model):
 
@@ -17,6 +39,7 @@ class Interest(models.Model):
 
     def __str__(self):
         return "{}".format(self.name)
+
 class Location(models.Model):
     """
     Descriptive model of a location
@@ -38,3 +61,5 @@ class Skill(models.Model):
 
     def __str__(self):
         return "{}".format(self.name)
+
+

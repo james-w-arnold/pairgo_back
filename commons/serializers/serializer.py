@@ -1,7 +1,7 @@
 from rest_framework import serializers
+from commons.models import commons
 
 class IndustrySerializer(serializers.ModelSerializer):
-    def to_representation(self, instance):
-        return str(instance.name)
-    def to_internal_value(self, data):
-        return data
+    class Meta:
+        model = commons.Industry
+        exclude = ('id',)
