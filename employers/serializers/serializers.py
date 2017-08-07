@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from employers import models
 from employers.utils import serializer_tools as st
+import logging
 
 class TeamSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,10 +16,10 @@ class EmployerPsychometricSerializer(serializers.ModelSerializer):
 
 class EmployerInterestSerializer(serializers.Serializer):
     def to_representation(self, instance):
-        employer_interests = models.EmployerInterest.objects.filter(employer__id=instance.id)
+        employer_interests = models.EmployerInterest.objects.filter(employer__id=instance.instance.id)
 
-        interests = [interest.name for interest in employer_interests]
-        return {interests}
+        interests = [interest.interest.name for interest in employer_interests]
+        return interests
     def to_internal_value(self, data):
         interests = []
 
@@ -34,12 +35,13 @@ class EmployerSerializer(serializers.ModelSerializer):
     email      = serializers.SerializerMethodField()
 
     interests = EmployerInterestSerializer(required=False)
-    team = TeamSerializer(required=False)
+    #team = TeamSerializer(required=False)
+    psychometrics = EmployerPsychometricSerializer(required=False)
 
 
     class Meta:
         model = models.Employer
-        exclude = ('user',)
+        fields = '__all__'
         read_only_fields = ('first_name', 'last_name', 'email')
 
     def get_first_name(self, obj):
@@ -52,17 +54,19 @@ class EmployerSerializer(serializers.ModelSerializer):
         return obj.user.email
 
     def create(self, validated_data):
-        company = validated_data.pop('company', {})
-        team = validated_data.pop('team', {})
-        psychometrics = validated_data.pop('psychometrics', {})
-        interests = validated_data.pop('interests', [])
+        company = validated_data.get('company', None)
+        team = validated_data.pop('team', None)
+        psychometrics = validated_data.pop('psychometrics', None)
+        interests = validated_data.pop('interests', None)
         employer = models.Employer(**validated_data)
+        logger = logging.getLogger(__name__)
+        logger.error(interests)
         employer.save(force_insert=True)
 
         if company:
             comp, nada = models.Company.objects.get_or_create(id=company)
             employer.company = comp
-            employer.save()
+
 
         if team:
             curr_team = models.Team.objects.get(team_name=team['name'], company=company)
@@ -72,13 +76,15 @@ class EmployerSerializer(serializers.ModelSerializer):
             else:
                 new_team = TeamSerializer(**team).create()
                 employer.team = new_team
-                employer.save()
+
 
         if psychometrics:
             psycho = EmployerPsychometricSerializer(**psychometrics, employer=employer).create()
 
         if interests:
             st.update_interests(employer, interests)
+
+
 
         return employer
 
@@ -116,8 +122,11 @@ class EmployerSerializer(serializers.ModelSerializer):
 
 class CompanyIndustrySerializer(serializers.Serializer):
     def to_representation(self, instance):
-        industries = models.CompanyIndustry.objects.filter(company=instance)
-        industry_dict = [{'name' : ind.name, 'category' : ind.category} for ind in industries]
+        logger = logging.getLogger(__name__)
+        logger.error(instance)
+        industries = set(models.CompanyIndustry.objects.filter(company=instance.instance.id))
+
+        industry_dict = [{'name' : ind.industry.name, 'category' : ind.industry.category} for ind in industries]
 
         return industry_dict
 

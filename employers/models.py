@@ -7,40 +7,22 @@ class Employer(models.Model):
     """
     user = models.ForeignKey(
         User,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        blank=False
     )
     about = models.TextField()
     job_title = models.CharField(max_length=255)
     is_lead = models.BooleanField(default=False)
     #psychometrics tied to them
-    #team
-    team = models.ForeignKey(
-        'Team',
-        on_delete=models.PROTECT,
-        blank=True
-    )
+
     interests = models.ManyToManyField(
         Interest,
         through='EmployerInterest',
         blank=True
     )
 
-    employed_by_company = models.ForeignKey(
-        'Company',
-        on_delete=models.CASCADE,
-        blank=True
-    )
-
-    def save(self, *args, **kwargs):
-        if not self.id:
-            self.id = self.user.id
-        super().save(*args, **kwargs)
-
     def __str__(self):
-        if self.employed_by_company is not None:
-            return "{} {} @ {}".format(self.user.first_name, self.user.last_name, self.employed_by_company.company_name)
-        else:
-            return "{} {}".format(self.user.first_name, self.user.last_name)
+        return "{} {}".format(self.user.first_name, self.user.last_name)
 
 
 class EmployerInterest(models.Model):
@@ -52,6 +34,8 @@ class EmployerInterest(models.Model):
         Interest,
         on_delete=models.CASCADE
     )
+
+
 
 class EmployerPsychometrics(models.Model):
     employer = models.ForeignKey(
@@ -135,3 +119,81 @@ class Team(models.Model):
 
     def __str__(self):
         return "{}".format(self.team_name)
+
+
+class TeamMember(models.Model):
+    """
+    method to assign employees to teams
+    """
+    employee = models.ForeignKey(
+        'Employee',
+        on_delete=models.CASCADE,
+        blank=False
+    )
+    team = models.ForeignKey(
+        'Team',
+        on_delete=models.DO_NOTHING,
+        blank=False
+    )
+
+#-------------------------------------------EMPLOYEE----------------------------------------------------
+class Employee(models.Model):
+    """
+    Model to describe an employee of a company, this user type can be created by a employer lead and they can be
+    assigned to teams
+    """
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        blank=False
+    )
+
+    about = models.TextField()
+    job_title = models.CharField(max_length=100)
+
+    teams = models.ManyToManyField(
+        Team,
+        through=TeamMember,
+        blank=True
+    )
+
+    interests = models.ManyToManyField(
+        Interest,
+        through='EmployeeInterest',
+        blank=True
+    )
+
+    def __str__(self):
+        return "{} {}".format(self.user.first_name, self.user.last_name)
+
+
+class EmployeeInterest(models.Model):
+    """
+    Through method to link employees with interests
+    """
+    employee = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        blank=False
+    )
+
+    interest = models.ForeignKey(
+        Interest,
+        on_delete=models.CASCADE,
+        blank=False
+    )
+
+class EmployeePsychometrics(models.Model):
+    """
+    Model to describe the psychometrics of an employee
+    """
+    employee = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        blank=False
+    )
+    extroversion = models.IntegerField()
+    neuroticism  = models.IntegerField()
+    openness_to_experience = models.IntegerField()
+    conscientiousness = models.IntegerField()
+    agreeableness = models.IntegerField()

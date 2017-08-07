@@ -1,5 +1,6 @@
 from commons.models.commons import Interest, Industry
 from employers.models import EmployerInterest, CompanyIndustry
+import logging
 
 def update_interests(instance, interests):
     """
@@ -29,8 +30,8 @@ def update_interests(instance, interests):
                 employer_interests_all.filter(interest__name=interest.interest.name).delete()
 
 
-        if interest_to_add:
-            for interest in interest_to_add:
+        if interests_to_add:
+            for interest in interests_to_add:
                 EmployerInterest.objects.create(employer=instance,
                                                 interest=interest)
 
@@ -43,13 +44,16 @@ def update_industries(instance, industries):
     company_industries = set(company_industries_all)
     received_industries = industries
 
+    logger = logging.getLogger(__name__)
+    logger.error(industries)
+
     if received_industries:
 
         received_industries_set = set()
 
         for industry in received_industries:
-            industry_to_add, nada = Industry.objects.get_or_create(name=industry.name,
-                                                                   category=industry.category)
+            industry_to_add, nada = Industry.objects.get_or_create(name=industry['name'],
+                                                                   category=industry['category'])
             received_industries_set.add(industry_to_add)
 
         industries_to_add = received_industries_set - company_industries

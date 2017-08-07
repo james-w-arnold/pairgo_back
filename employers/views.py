@@ -14,16 +14,6 @@ class EmployerLeadView(ModelViewSet):
     serializer_class = EmployerSerializer
     queryset = Employer.objects.all()
 
-    def perform_create(self, serializer):
-        queryset = Employer.objects.filter(user=self.request.user)
-        if queryset.exists():
-            raise ValidationError('You already have an employer account!')
-        else:
-            userType = UserType.objects.get(user=self.request.user)
-            userType.isEmployer = True
-            userType.save()
-        serializer.save(user=self.request.user)
-
 class CompanyView(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = CompanySerializer

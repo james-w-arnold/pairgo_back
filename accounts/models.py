@@ -180,6 +180,10 @@ class CandidatePsychometrics(models.Model):
     conscientiousness = models.IntegerField()
     agreeableness = models.IntegerField()
 
+    #strength variable - the more questions that a candidate takes, the stronger their 'matches' can be, for each
+    #set of questions (1 for each type), the candidate gains 1 "stremgth"
+    strength = models.IntegerField(default = 0)
+
     user = models.ForeignKey(
         'Candidate',
         on_delete=models.CASCADE
