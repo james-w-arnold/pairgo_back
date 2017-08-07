@@ -1,18 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="74068a8d-130d-4713-8498-33de04b76b86" name="Default" comment="fixed many bugs with the candidate serializer, still problems with the locations not vaidating.">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/employers/migrations/0005_employee_company.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/employers/migrations/0006_auto_20170807_1114.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/employers/migrations/0007_auto_20170807_1141.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/db.sqlite3" afterPath="$PROJECT_DIR$/db.sqlite3" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/employers/models.py" afterPath="$PROJECT_DIR$/employers/models.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/employers/serializers/serializers.py" afterPath="$PROJECT_DIR$/employers/serializers/serializers.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/employers/urls.py" afterPath="$PROJECT_DIR$/employers/urls.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/employers/utils/serializer_tools.py" afterPath="$PROJECT_DIR$/employers/utils/serializer_tools.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/employers/views.py" afterPath="$PROJECT_DIR$/employers/views.py" />
-    </list>
+    <list default="true" id="74068a8d-130d-4713-8498-33de04b76b86" name="Default" comment="fixed many bugs with the candidate serializer, still problems with the locations not vaidating." />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -103,7 +92,7 @@
         <entry file="file://$PROJECT_DIR$/employers/serializers/serializers.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="-3922">
-              <caret line="7" column="27" lean-forward="true" selection-start-line="7" selection-start-column="27" selection-end-line="7" selection-end-column="27" />
+              <caret line="7" column="27" lean-forward="false" selection-start-line="7" selection-start-column="27" selection-end-line="7" selection-end-column="27" />
               <folding />
             </state>
           </provider>
@@ -751,13 +740,12 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-1" y="-11" width="1368" height="780" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.250774" sideWeight="0.505303" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33281735" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32980973" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24613003" sideWeight="0.49469697" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24613003" sideWeight="0.49469697" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14469697" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="manage.py@pairgo_rest" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32662538" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
@@ -1234,7 +1222,7 @@
     <entry file="file://$PROJECT_DIR$/employers/serializers/serializers.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-3922">
-          <caret line="7" column="27" lean-forward="true" selection-start-line="7" selection-start-column="27" selection-end-line="7" selection-end-column="27" />
+          <caret line="7" column="27" lean-forward="false" selection-start-line="7" selection-start-column="27" selection-end-line="7" selection-end-column="27" />
           <folding />
         </state>
       </provider>
