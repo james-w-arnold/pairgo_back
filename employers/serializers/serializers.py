@@ -170,3 +170,113 @@ class CompanySerializer(serializers.ModelSerializer):
 
         return company
 
+#-----------------------------------------------employee serializers---------------------------------------
+
+class EmployeeInterestSerializer(serializers.Serializer):
+    def to_representation(self, instance):
+        employee_intersts = models.EmployeeInterest.objects.filter(employee__id=instance.instance.id)
+
+        interests = [interest.interest.name for interest in employee_intersts]
+        return interests
+    def to_internal_value(self, data):
+        interests = []
+
+        for interest in data:
+            interests.append(interest)
+
+        return interests
+
+class EmployeePsychometricSerializer(serializers.Serializer):
+    """
+    Serializer to convert psychometrics into a readable format
+    """
+    def to_representation(self, instance):
+        psychometrics = models.EmployeePsychometrics.objects.get(employee_id=instance.instance.id)
+        psycho_json = {
+            "extroversion" : psychometrics.extroversion,
+            "neuroticism" : psychometrics.neuroticism,
+            "openness_to_experience" : psychometrics.openness_to_experience,
+            "conscientiousness" : psychometrics.conscientiousness,
+            "agreeableness" : psychometrics.agreeableness
+        }
+        return psycho_json
+    def to_internal_value(self, data):
+        psychometrics = {
+            "extroversion" : data['extroversion'] or "",
+            "neuroticism" : data['neuroticism'] or "",
+            "openness_to_experience" : data['openness_to_experience'] or "",
+            "conscientiousness" : data['conscienciousness'] or "",
+            "agreeableness" : data['agreeableness'] or ""
+        }
+        return psychometrics
+
+class EmployeePsychometricsModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.EmployeePsychometrics
+        exclude = ('id', 'employee')
+
+class TeamMemberSerializer(serializers.Serializer):
+    def to_representation(self, instance):
+        employee_teams = models.TeamMember.objects.filter(employee_id=instance.instance.id)
+
+        teams = [{"team_name" : team.team.team_name, "company" : team.company.company_name} for team in employee_teams]
+        return teams
+
+    def to_internal_value(self, data):
+        teams = []
+        for team in data:
+            teams.append(data)
+        return teams
+
+class EmployeeSerializer(serializers.ModelSerializer):
+    """
+    Serializer to produce a serializable format of the employee model along with its associated models
+    """
+    teams = TeamMemberSerializer(required=False)
+    psychometrics = EmployeePsychometricsModelSerializer(required=False)
+    interests = EmployeeInterestSerializer(required=False)
+
+    class Meta:
+        model = models.Employee
+        fields = ('user', 'about', 'job_title', 'company', 'id', 'psychometrics', 'interests', 'teams')
+        read_only_fields = ('id', )
+    def create(self, validated_data):
+        return EmployeeSerializer.__update_or_create(validated_data)
+
+    def update(self, instance, validated_data):
+        return EmployeeSerializer.__update_or_create(validated_data, instance)
+
+    @staticmethod
+    def __update_or_create(data, instance=None):
+        """
+        :param data: the validated data passed to the serializer
+        :param instance: the employee instance, this is only passed if updating the model
+        :return: a created or updated employee model
+        """
+        interests = data.pop('interests', [])
+        teams = data.pop('teams', [])
+        psychometrics = data.pop('psychometrics', [])
+
+        if instance is not None:
+            employee = models.Employee(id=instance.id, **data)
+            employee.save(force_update=True)
+        else:
+            employee = models.Employee(**data)
+            employee.save(force_insert=True)
+
+        if interests:
+            st.update_employee_interests(employee, interests)
+
+        if teams:
+            st.update_team_members(employee, teams)
+
+        if psychometrics:
+            st.update_employee_psychometrics(employee, psychometrics)
+
+        return employee
+
+
+class TeamMembersModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.TeamMember
+        fields = '__all__'

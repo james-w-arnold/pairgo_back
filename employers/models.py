@@ -151,6 +151,12 @@ class Employee(models.Model):
     about = models.TextField()
     job_title = models.CharField(max_length=100)
 
+    company = models.ForeignKey(
+        'Company',
+        on_delete=models.CASCADE,
+        blank=False
+    )
+
     teams = models.ManyToManyField(
         Team,
         through=TeamMember,
@@ -192,8 +198,8 @@ class EmployeePsychometrics(models.Model):
         on_delete=models.CASCADE,
         blank=False
     )
-    extroversion = models.IntegerField()
-    neuroticism  = models.IntegerField()
-    openness_to_experience = models.IntegerField()
-    conscientiousness = models.IntegerField()
-    agreeableness = models.IntegerField()
+    extroversion = models.IntegerField(blank=True, default="")
+    neuroticism  = models.IntegerField(blank=True, default="")
+    openness_to_experience = models.IntegerField(blank=True, default="")
+    conscientiousness = models.IntegerField(blank=True, default="")
+    agreeableness = models.IntegerField(blank=True, default="")
