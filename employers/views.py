@@ -7,13 +7,18 @@ from employers.models import Employer, Company, Employee, EmployeePsychometrics,
 from accounts.models import UserType
 from employers.permissions import IsEmployerOrNeither
 from rest_framework.generics import RetrieveAPIView, CreateAPIView
-# Create your views here.
+from django.core.mail import send_mail
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.status import HTTP_400_BAD_REQUEST
 
 class EmployerLeadView(ModelViewSet):
     #todo: fix the permission class
     permission_classes = (IsAuthenticated, )
     serializer_class = EmployerSerializer
     queryset = Employer.objects.all()
+
+    lookup_field = 'user'
 
 class CompanyView(ModelViewSet):
     permission_classes = (IsAuthenticated,)
@@ -45,4 +50,34 @@ class ListTeamMembers(RetrieveAPIView):
     queryset = TeamMember.objects.all()
     permission_classes = (IsAuthenticated, )
     serializer_class = TeamMembersModelSerializer
+
+class InviteEmployee(APIView):
+    """
+    Class view to allow employers invite employees via email
+    """
+    permission_classes = ()
+
+    def post(self, request, format=None):
+        emails = request.data.get('emails', [])
+        team  = request.data.get('team', None)
+        company = request.data.get('company', None)
+        if emails and team and company:
+
+            team_obj = Team.objects.get(id=team)
+            for email in emails:
+
+                link = "localhost:7897/employee?team={}&company={}&email={}".format(team_obj.team_name, company, email)
+                email_string = "Hi there\n You've been invited to join the {} team at {}!\nClick this link to signup: {}".format(team_obj.team_name, company, link)
+
+                mail = send_mail("You've been invited to a team on PairGo",
+                          email_string,
+                          from_email='james@pairgo.co.uk',
+                          recipient_list=[email]
+                          )
+            if mail==1:
+                return Response({"success": True})
+            else:
+                return Response({"success": False})
+        else:
+            return Response({"data" : request.data, "emails" : emails},status=HTTP_400_BAD_REQUEST)
 

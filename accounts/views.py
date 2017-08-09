@@ -13,7 +13,7 @@ from accounts.serializers import serializers
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 from accounts.permissions import permissions
-from accounts.models import Candidate, UserType
+from accounts.models import Candidate, UserType, CandidatePsychometrics
 # Create your views here.
 
 class LoginView(ObtainAuthToken):
@@ -62,9 +62,10 @@ class CreateCandidateView(ModelViewSet):
     """
     Allows for creation of a candidate model
     """
-    permission_classes = (IsAuthenticated, permissions.IsOwner, permissions.IsCandidateOrNeither)
+    permission_classes = (IsAuthenticated, permissions.IsOwner)
     queryset = Candidate.objects.all()
     serializer_class = serializers.CandidateSerializer
+    lookup_field = 'user'
 
     def perform_create(self, serializer):
         """
@@ -83,9 +84,12 @@ class CreateCandidateView(ModelViewSet):
         self.index(serializer.data, self.request.user.id)
 
 
+class CandidatePsychometricsView(ModelViewSet):
+    permission_classes = (IsAuthenticated, )
+    serializer_class = serializers.PsychometricSerializer
+    queryset = CandidatePsychometrics.objects.all()
 
-
-
+    lookup_field = 'user'
 
 
 

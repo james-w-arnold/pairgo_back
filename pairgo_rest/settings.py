@@ -48,6 +48,7 @@ PAIRGO_DJANGO_APPS = (
     'accounts',
     'commons',
     'employers',
+    'postings',
 )
 
 THIRD_PARTY_APPS = (
@@ -159,3 +160,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+#EMAIL
+EMAIL_HOST = 'smtp.office365.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'james@pairgo.co.uk'
+EMAIL_HOST_PASSWORD = 'Darcy123!'
+EMAIL_USE_TLS = True

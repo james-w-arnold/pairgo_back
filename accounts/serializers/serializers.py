@@ -160,7 +160,7 @@ class CandidateSkillSerializer(serializers.Serializer):
 class PsychometricSerializer(serializers.ModelSerializer):
     class Meta:
         model = CandidatePsychometrics
-        exclude = ('id', 'user')
+        exclude = ('id',)
 
 class InterestSerializer(serializers.ModelSerializer):
     class Meta:
