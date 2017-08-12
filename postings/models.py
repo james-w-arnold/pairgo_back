@@ -30,13 +30,6 @@ class Posting(models.Model):
     closed_date = models.DateField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=status_types)
     salary = models.FloatField(blank=True)
-
-    psychometrics = models.ForeignKey(
-        'PostingPsychometrics',
-        on_delete=models.DO_NOTHING,
-        blank=True
-    )
-
     #foreign keys
     company = models.ForeignKey(
         Company,
@@ -134,6 +127,7 @@ class PostingPsychometrics(models.Model):
     """
     Model to describe the psychometric analysis of a post
     """
+    posting = models.ForeignKey('Posting', on_delete=models.CASCADE)
     extroversion = models.IntegerField()
     neuroticism = models.IntegerField()
     openness_to_experience = models.IntegerField()

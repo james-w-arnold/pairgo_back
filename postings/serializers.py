@@ -3,6 +3,11 @@ from .models import *
 from employers.models import Team, Company
 from accounts.serializers.serializers import LocationSerializer
 from rest_framework.exceptions import ValidationError
+import logging
+from postings import serializer_tools as st
+
+global logger
+logger = logging.getLogger(__name__)
 
 class PostingInterestSerializer(serializers.Serializer):
     def to_representation(self, instance):
@@ -23,7 +28,7 @@ class PostingSkillSerializer(serializers.Serializer):
 
 class PostingLocationSerializer(serializers.Serializer):
     def to_representation(self, instance):
-        posting_locations = PostingLocation.objects.filter(posting__id=obj.instance.id)
+        posting_locations = PostingLocation.objects.filter(posting__id=instance.instance.id)
         locations = []
         if posting_locations.exists():
             for location in posting_locations:
@@ -36,6 +41,7 @@ class PostingLocationSerializer(serializers.Serializer):
         if data:
             for location in data:
                 locations.append(PostingLocationSerializer.__parse_location(location))
+        return locations
 
     @staticmethod
     def __parse_location(location):
@@ -66,20 +72,66 @@ class PostingEmployeeSerializer(serializers.Serializer):
 class PostingCompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
-        fields = ('id', 'company_name')
+        fields = ('id', 'company_name', 'industries')
 
 
 class PostingSerializer(serializers.ModelSerializer):
     """
     Serializer which controls the posting model
     """
+    company = serializers.SlugRelatedField(queryset=Company.objects.all(),
+                                           read_only=False,
+                                           slug_field='id')
     locations = PostingLocationSerializer(required=True)
     skills = PostingSkillSerializer()
     interests = PostingInterestSerializer()
-    company = PostingCompanySerializer()
-    employees = PostingEmployeeSerializer()
+    employees = PostingEmployeeSerializer(required=False)
 
     class Meta:
         model = Posting
-        exclude = ('psychometrics', )
+        fields = '__all__'
+
+    def create(self, validated_data):
+        logger.error(validated_data)
+        return PostingSerializer.__create_or_update(validated_data)
+
+    def update(self, instance, validated_data):
+        return PostingSerializer.__create_or_update(validated_data, instance)
+
+    @staticmethod
+    def __create_or_update(data, instance=None):
+        """
+        Static method which allows for creation or update of a posting
+        :param instance: This is a instance
+        :param data: the validated data from the serializer
+        :return: A posting object
+        """
+        locations = data.pop('locations', {'current': {}, 'potential' : {}})
+        skills = data.pop('skills', [])
+        interests = data.pop('interests', [])
+        employees = data.pop('employees', [])
+
+        logger.error(data)
+
+        if instance is not None:
+            posting = Posting(id=instance.id, **data)
+            posting.save(force_update=True)
+
+        else:
+            posting = Posting(**data)
+            logger.error(posting)
+            posting.save(force_insert=True)
+
+        if locations:
+            st.update_posting_locations(posting, locations)
+        if skills:
+            st.update_posting_skills(posting, skills)
+        if interests:
+            st.update_posting_interests(posting, interests)
+        if employees:
+            st.update_posting_employees(posting, employees)
+
+        return posting
+
+
 
