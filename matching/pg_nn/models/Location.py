@@ -24,6 +24,8 @@ class LocationComparator:
         self.api_key = "AIzaSyDbkAJndXb-HX6cj4LYYaB8Nm98DmI3D7Y"
         self.posting_location = posting_location
         self.candidate_locations = []
+        self.max_distance = 100000
+        self.min_distance = 0
 
         for item in candidate_locations:
             self.candidate_locations.append(item)
@@ -68,13 +70,16 @@ class LocationComparator:
                         for val in value:
                             if val['distance']['value'] < shortest_row:
                                 shortest_row = val['distance']['value']
+            if shortest_row > self.max_distance:
+                return 1
+            else:
+                return shortest_row/self.max_distance
 
-            return shortest_row
-
-        except Exception as e:
-            print(e)
         except AssertionError as e:
             raise AssertionError('Locations need to be location object')
+        except Exception as e:
+            print(e)
+
 
 
 

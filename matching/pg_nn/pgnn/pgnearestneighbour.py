@@ -2,6 +2,7 @@ from matching.pg_nn.models import Skill, Location, Interest, PsychometricAnalysi
 from accounts.models import Candidate, CandidatePsychometrics, CandidateSkill, CandidateLocation, CandidateInterest
 from employers.models import Team, TeamMember, EmployeePsychometrics, EmployerPsychometrics
 from postings.models import Posting, PostingSkill, PostingLocation, PostingInterest, PostingPsychometrics
+from matching.models import Match
 import statistics
 from concurrent.futures import ThreadPoolExecutor
 
@@ -57,10 +58,51 @@ class DistanceMeasurement:
             "skills" : self.skillVal,
             "interests" : self.interestVal,
             "locations" : self.distance,
-            "psychometrics" : self.psychoVal
+            "psychometrics" : self.psychoVal,
+            "total" : self.skillVal + self.interestVal + self.distance + self.psychoVal / 4
         }
 
         return self.distance_matrix
+
+
+class JSort:
+    def __init__(self, distances):
+        self.distances = distances
+        self.matches = []
+
+    def sort(self):
+        first = True
+        for distance in self.distances:
+            print(distance.total)
+            if first:
+                self.matches.append(distance)
+                first = False
+            else:
+                for i in range(0, len(self.matches)):
+                    inserted = False
+                    if distance.total < self.matches[i].total:
+                        self.matches.insert(i, distance)
+                        inserted = True
+                        break
+                if inserted == False and len(self.matches) < 10:
+                    self.matches.append(distance)
+
+                if len(self.matches) > 10:
+                    self.matches.pop()
+                print(self.matches)
+        return self.matches
+
+
+class Distance:
+    def __init__(self, candID, total, left=None, right=None):
+        self.id = candID
+        self.total = total
+
+    def __str__(self):
+        return "{}".format(self.total)
+
+    def __repr__(self):
+        return "{}".format(self.total)
 
 class Matching:
     """
@@ -131,13 +173,21 @@ class Matching:
             clean_psychometrics = Matching.__cleanCandidatePsychometrics(psychometrics)
             with ThreadPoolExecutor() as pool:
                 try:
-                    self.distances[candidate.name] = pool.submit(DistanceMeasurement(posting_skills, posting_interests, (posting_location.lat, posting_location.lon), posting_psychometrics,
+                    self.distances[candidate.id] = pool.submit(DistanceMeasurement(posting_skills, posting_interests, (posting_location.lat, posting_location.lon), posting_psychometrics,
                                                                                 skills=candidate.skills,
                                                                                 interests=interests,
                                                                                 locations=locations,
                                                                                 psychometrics=clean_psychometrics))
                 except Exception as exp:
                     raise exp
+
+            matches = Matching.__sortResults()
+
+            #create a model to represent the new matches
+            for match in matches:
+                #Get candidate
+                candidate = Candidate.objects.get(id=match.id)
+                new_match = Match.objects.create(candidate=candidate, posting=self.posting)
 
         #now that the distance measurements have all been applied, sort the list and produce the top ten
         #potentially use nested sorts.
@@ -161,6 +211,18 @@ class Matching:
             "strength": psychometrics.strength
         }
         return cleaned
+
+    def __sortResults(self):
+        """
+        Sorts the returned candidates into an ordered list the depict the candidates which are the closest in orientation to the posting
+        :return: an ordered list of Distance objects, which contain the ID and the total score of the candidates whom have been matched
+        """
+        dists = [Distance(k, self.distances[k]['total']) for k in self.distances]
+        sorter = JSort(dists)
+        sorted_matches = sorter.sort()
+        return sorted_matches
+
+
 """
 if __name__ == '__main__':
     c_skill_1 = 'Java'
