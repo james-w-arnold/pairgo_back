@@ -1,11 +1,12 @@
+import logging
 
 class PsychometricIndex:
     def __init__(self, psychometrics):
         self.extroversion = psychometrics.get('extroversion', 0)
-        self.openness     = psychometrics.get('openness', 0)
+        self.openness     = psychometrics.get('openness_to_experience', 0)
         self.agreeableness = psychometrics.get('agreeableness', 0)
         self.neuroticism  = psychometrics.get('neuroticism', 0)
-        self.consciousness = psychometrics.get('consciousness', 0)
+        self.consciousness = psychometrics.get('conscientiousness', 0)
         self.strength = psychometrics.get('strength', 1)
 
 

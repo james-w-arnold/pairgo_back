@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from .serializers import PostingSerializer
 from .models import Posting
 from matching.pg_nn.pgnn.pgnearestneighbour import Matching
+import logging
 
 class PostingViewSet(ModelViewSet):
 
@@ -18,6 +19,8 @@ class PostingViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
+        logger = logging.getLogger(__name__)
+        #logger.error(serializer.data['id'])
         #produce matches
         matches = Matching(serializer.data)
         matches.cleanCandidates()

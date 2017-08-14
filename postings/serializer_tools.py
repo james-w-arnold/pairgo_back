@@ -1,6 +1,6 @@
 from .models import *
 from commons.models.commons import *
-
+import logging
 def update_posting_interests(instance, interests):
     """
     Update the interests of a posting instance
@@ -69,7 +69,9 @@ def update_posting_locations(instance, locations):
     posting_locations = set(posting_locations_all)
     received_locations = set()
 
-    if posting_locations:
+    logger = logging.getLogger(__name__)
+    logger.error(locations)
+    if locations:
         for location in locations:
             loc, nada = Location.objects.get_or_create(**location)
             received_locations.add(loc)

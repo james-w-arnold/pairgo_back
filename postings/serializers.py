@@ -41,6 +41,8 @@ class PostingLocationSerializer(serializers.Serializer):
         if data:
             for location in data:
                 locations.append(PostingLocationSerializer.__parse_location(location))
+
+
         return locations
 
     @staticmethod
@@ -92,7 +94,6 @@ class PostingSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        logger.error(validated_data)
         return PostingSerializer.__create_or_update(validated_data)
 
     def update(self, instance, validated_data):
@@ -106,12 +107,11 @@ class PostingSerializer(serializers.ModelSerializer):
         :param data: the validated data from the serializer
         :return: A posting object
         """
-        locations = data.pop('locations', {'current': {}, 'potential' : {}})
+        locations = data.pop('locations', {})
         skills = data.pop('skills', [])
         interests = data.pop('interests', [])
         employees = data.pop('employees', [])
 
-        logger.error(data)
 
         if instance is not None:
             posting = Posting(id=instance.id, **data)
@@ -119,7 +119,6 @@ class PostingSerializer(serializers.ModelSerializer):
 
         else:
             posting = Posting(**data)
-            logger.error(posting)
             posting.save(force_insert=True)
 
         if locations:

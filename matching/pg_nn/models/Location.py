@@ -1,7 +1,7 @@
 import googlemaps
 import json
 import pprint
-
+import logging
 class Location:
 
     def __init__(self, lat, lon):
@@ -47,6 +47,8 @@ class LocationComparator:
         try:
             gmaps = googlemaps.Client(key=self.api_key)
             origin = self.posting_location.getLatLon()
+            logger = logging.getLogger(__name__)
+            logger.error(origin)
             destinations = []
 
             for loc in self.candidate_locations:
@@ -57,7 +59,7 @@ class LocationComparator:
                 origin,
                 destinations
             )
-
+            logger.error(distmatx)
             #from returned values, return the smallest distance
             #pprint.pprint(distmatx)
             rows = distmatx['rows']
@@ -78,7 +80,8 @@ class LocationComparator:
         except AssertionError as e:
             raise AssertionError('Locations need to be location object')
         except Exception as e:
-            print(e)
+            logger = logging.getLogger(__name__)
+            logger.error(e)
 
 
 

@@ -5,6 +5,7 @@ from postings.models import Posting, PostingSkill, PostingLocation, PostingInter
 from matching.models import Match
 import statistics
 from concurrent.futures import ThreadPoolExecutor
+import logging
 
 class DistanceMeasurement:
     def __init__(self, posting_skills, posting_interests, post_location, posting_psychometrics, **kwargs):
@@ -18,6 +19,8 @@ class DistanceMeasurement:
         self.post_location = post_location
         self.posting_psychometrics = posting_psychometrics
 
+        self.logger = logging.getLogger(__name__)
+
         self.normalizeSkills()
         self.normalizeInterests()
         self.normalizeLocations()
@@ -30,7 +33,6 @@ class DistanceMeasurement:
         comparator.addCandidateSkills(self.n_skills)
         comparator.addPostingSkills(self.n_pskills)
         self.skillVal = comparator.run()
-        print(self.skillVal)
 
     def normalizeInterests(self):
         self.n_interests = [Interest.Interest(interest) for interest in self.interests]
@@ -54,6 +56,7 @@ class DistanceMeasurement:
         self.psychoVal = comparator.run()
 
     def getdistance(self):
+
         self.distance_matrix = {
             "skills" : self.skillVal,
             "interests" : self.interestVal,
@@ -118,13 +121,14 @@ class Matching:
     def cleanCandidates(self):
         """produce a list of 'clean' candidates, that have all the required information to do matches"""
         self.clean_candidates = []
+        logger = logging.getLogger(__name__)
+
         for candidate in self.candidates:
             try:
                 psychometrics = CandidatePsychometrics.objects.get(user=candidate)
                 if (candidate.locations is not None and
                     candidate.skills is not None and
-                    candidate.interests is not None and
-                    psychometrics.exists()):
+                    candidate.interests is not None):
                     self.clean_candidates.append(candidate)
             except CandidatePsychometrics.DoesNotExist as e:
                 pass
@@ -135,57 +139,60 @@ class Matching:
         Perform the matching process by applying the distance measurement to all of the cleaned candidates
         :return: a list of the top matches
         """
-
+        logger = logging.getLogger(__name__)
         #get data formatted from objects
-        posting_skills_objs = PostingSkill.objects.filter(posting=self.posting)
+        posting_skills_objs = PostingSkill.objects.filter(posting__id=self.posting['id'])
         posting_skills = [instance.skill.name for instance in posting_skills_objs]
-        posting_interests_objs = PostingInterest.objects.filter(posting=self.posting)
+        posting_interests_objs = PostingInterest.objects.filter(posting__id=self.posting['id'])
         posting_interests = [instance.interest.name for instance in posting_interests_objs]
-        posting_location_obj = PostingLocation.objects.get(posting=self.posting)
+        posting_location_obj = PostingLocation.objects.get(posting__id=self.posting['id'])
+        logger.error(posting_location_obj)
         posting_location = posting_location_obj.location
+        logger.error(posting_location.lat)
         posting_psychometrics = {
-            "extroversion": None,
-            "neuroticism": None,
-            "openness_to_experience": None,
-            "agreeableness": None,
-            "conscientiousness": None
+            "extroversion": 0,
+            "neuroticism": 0,
+            "openness_to_experience": 0,
+            "agreeableness": 0,
+            "conscientiousness": 0
         }
         if psycho_setting == None:
             #get psychometrics from a range of team + employee and employer data
             #get any team assigned to the posting
-            team = self.posting.team
+            team = self.posting['team']
             if team is not None and team is not "":
+                logger.error(team)
                 team_members = set(TeamMember.objects.filter(team=team))
                 for member in team_members:
                     member_psych = EmployeePsychometrics.objects.get(employee=member.employee)
                     if member_psych.exists():
-                        posting_psychometrics = Matching.__addPsychometrics(posting_psychometrics, member_psych)
+                        posting_psychometrics = self.addPsychometrics(posting_psychometrics, member_psych)
 
-        employer = self.posting.employer
-        employer_psych = EmployerPsychometrics.objects.get(employer=employer)
-        if employer_psych.exists():
-            posting_psychometrics = Matching.__addPsychometrics(posting_psychometrics, employer_psych)
+        employer = self.posting['employer']
+        try:
+            employer_psych = EmployerPsychometrics.objects.get(employer=employer)
+            if employer_psych.exists():
+                posting_psychometrics = self.addPsychometrics(posting_psychometrics, employer_psych)
+        except Exception as e:
+            pass
 
         self.distances = {}
+        logger = logging.getLogger(__name__)
         for candidate in self.clean_candidates:
             #need to clean up this class
             #first get the needed information about each candidate
             skills = [instance.skill.name for instance in set(CandidateSkill.objects.filter(candidate=candidate))]
             interests = [instance.interest.name for instance in set(CandidateInterest.objects.filter(candidate=candidate))]
             locations = [(instance.location.lat, instance.location.lon) for instance in set(CandidateLocation.objects.filter(candidate=candidate))]
-            psychometrics = CandidatePsychometrics.objects.get(candidate=candidate)
-            clean_psychometrics = Matching.__cleanCandidatePsychometrics(psychometrics)
-            with ThreadPoolExecutor() as pool:
-                try:
-                    self.distances[candidate.id] = pool.submit(DistanceMeasurement(posting_skills, posting_interests, (posting_location.lat, posting_location.lon), posting_psychometrics,
-                                                                                skills=candidate.skills,
+            self.c_psychometrics = CandidatePsychometrics.objects.get(user=candidate.id)
+            clean_psychometrics = self.cleanCandidatePsychometrics()
+            self.distances[candidate.id] = DistanceMeasurement(posting_skills, posting_interests, (posting_location.lat, posting_location.lon), posting_psychometrics,
+                                                                                skills=skills,
                                                                                 interests=interests,
                                                                                 locations=locations,
-                                                                                psychometrics=clean_psychometrics))
-                except Exception as exp:
-                    raise exp
-
-            matches = Matching.__sortResults()
+                                                                                psychometrics=clean_psychometrics).getdistance()
+            logger.error(self.distances)
+            matches = self.sortResults()
 
             #create a model to represent the new matches
             for match in matches:
@@ -196,7 +203,7 @@ class Matching:
         #now that the distance measurements have all been applied, sort the list and produce the top ten
         #potentially use nested sorts.
 
-    def __addPsychometrics(self, current, other):
+    def addPsychometrics(self, current, other):
         """Helper function that adds psychometric data to the current psychometric index to produce the pooled index"""
         current['extroversion'] = statistics.mean([current['extroversion'], other['extroversion']])
         current['neuroticism'] = statistics.mean([current['neuroticism'], other['neuroticism']])
@@ -205,18 +212,18 @@ class Matching:
         current['conscientiousness'] = statistics.mean([current['conscientiousness'], other['conscientiousness']])
         return current
 
-    def __cleanCandidatePsychometrics(self, psychometrics):
+    def cleanCandidatePsychometrics(self):
         cleaned = {
-            "extroversion": psychometrics.extroversion,
-            "neuroticism": psychometrics.neuroticism,
-            "openness_to_experience": psychometrics.openness_to_experience,
-            "agreeableness": psychometrics.agreeableness,
-            "conscientiousness": psychometrics.conscientiousness,
-            "strength": psychometrics.strength
+            "extroversion": self.c_psychometrics.extroversion,
+            "neuroticism": self.c_psychometrics.neuroticism,
+            "openness_to_experience": self.c_psychometrics.openness_to_experience,
+            "agreeableness": self.c_psychometrics.agreeableness,
+            "conscientiousness": self.c_psychometrics.conscientiousness,
+            "strength": self.c_psychometrics.strength
         }
         return cleaned
 
-    def __sortResults(self):
+    def sortResults(self):
         """
         Sorts the returned candidates into an ordered list the depict the candidates which are the closest in orientation to the posting
         :return: an ordered list of Distance objects, which contain the ID and the total score of the candidates whom have been matched

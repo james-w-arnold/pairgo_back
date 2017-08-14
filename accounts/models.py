@@ -190,7 +190,7 @@ class CandidatePsychometrics(models.Model):
     )
 
     def __str__(self):
-        return "{}".format(self.user)
+        return "{} - Big 5".format(self.user)
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):

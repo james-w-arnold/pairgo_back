@@ -87,10 +87,6 @@ class LocationSerializer(serializers.ModelSerializer):
         model = Location
         exclude = ('id',)
 
-    def to_representation(self, instance):
-        if instance:
-            return {"name": instance.title, "geo": {"lat": instance.lat, "lon": instance.lon}}
-        return {}
 
 class CandidateLocationSerializer(serializers.Serializer):
     def to_representation(self, obj):
