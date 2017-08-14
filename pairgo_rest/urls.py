@@ -25,4 +25,5 @@ urlpatterns = [
     url(r'^swagger/$', schema_view),
     url(r'^employers/' , include('employers.urls', namespace='employers')),
     url(r'^postings/', include('postings.urls', namespace='postings')),
+    url(r'^messaging/', include('messaging.urls', namespace='messaging')),
 ]

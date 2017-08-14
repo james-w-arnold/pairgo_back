@@ -50,6 +50,7 @@ PAIRGO_DJANGO_APPS = (
     'employers',
     'postings',
     'matching',
+    'messaging',
 )
 
 THIRD_PARTY_APPS = (

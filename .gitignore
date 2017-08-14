@@ -101,6 +101,6 @@ ENV/
 
 #idea
 .idea
-
-#the database dump files
-database_dumps
+.idea/pairgo_rest.iml
+.idea/workspace.xml
+.idea/misc.xml

@@ -114,16 +114,20 @@ class Matching:
         self.posting = posting
         self.candidates = Candidate.objects.all()
 
+
     def cleanCandidates(self):
         """produce a list of 'clean' candidates, that have all the required information to do matches"""
         self.clean_candidates = []
         for candidate in self.candidates:
-            psychometrics = CandidatePsychometrics.objects.get(candidate=candidate)
-            if (candidate.locations is not None and
-                candidate.skills is not None and
-                candidate.interests is not None and
-                psychometrics.exists()):
-                self.clean_candidates.append(candidate)
+            try:
+                psychometrics = CandidatePsychometrics.objects.get(user=candidate)
+                if (candidate.locations is not None and
+                    candidate.skills is not None and
+                    candidate.interests is not None and
+                    psychometrics.exists()):
+                    self.clean_candidates.append(candidate)
+            except CandidatePsychometrics.DoesNotExist as e:
+                pass
 
 
     def match(self, psycho_setting=None):
