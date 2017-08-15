@@ -15,11 +15,11 @@ class Match(models.Model):
         Posting,
         on_delete=models.CASCADE
     )
-    psycho_score = models.FloatField()
+    #psycho_score = models.FloatField()
     psycho_type  = models.CharField(max_length=50)
-    skill_score = models.FloatField()
-    interest_score = models.FloatField()
-    location_score = models.FloatField()
+    #skill_score = models.FloatField()
+    #interest_score = models.FloatField()
+    #location_score = models.FloatField()
     total_match_score = models.FloatField()
 
     def __str__(self):

@@ -7,6 +7,7 @@ from .serializers import PostingSerializer
 from .models import Posting
 from matching.pg_nn.pgnn.pgnearestneighbour import Matching
 import logging
+import threading
 
 class PostingViewSet(ModelViewSet):
 
@@ -22,6 +23,7 @@ class PostingViewSet(ModelViewSet):
         logger = logging.getLogger(__name__)
         #logger.error(serializer.data['id'])
         #produce matches
+
         matches = Matching(serializer.data)
         matches.cleanCandidates()
         matches.match()
@@ -30,3 +32,4 @@ class PostingViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save()
+

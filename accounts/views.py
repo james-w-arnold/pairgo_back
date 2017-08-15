@@ -76,12 +76,14 @@ class CreateCandidateView(ModelViewSet):
         if queryset.exists():
             raise ValidationError('An account already exists for this user.')
         else:
-            userType = UserType.objects.get(user=self.request.user)
+            logger = logging.getLogger(__name__)
+            userType, nada = UserType.objects.get_or_create(user=self.request.user)
+            logger.error(userType)
             userType.isCandidate = True
             userType.save()
 
         serializer.save(user=self.request.user)
-        self.index(serializer.data, self.request.user.id)
+        #self.index(serializer.data, self.request.user.id)
 
 
 class CandidatePsychometricsView(ModelViewSet):

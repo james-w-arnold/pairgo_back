@@ -57,16 +57,39 @@ class DistanceMeasurement:
 
     def getdistance(self):
 
+        logger = logging.getLogger(__name__)
+
+        #convert psychometrics onto a 0->1 scale
+
+        norm_psychometrics = self.convertPsychometrics()
+
+        #fix the none error for location
+        if self.distance == None:
+            self.distance = 1
+
+        total = statistics.mean([self.skillVal, self.interestVal, self.distance, norm_psychometrics['extroversion'],
+                 norm_psychometrics['neuroticism'], norm_psychometrics['agreeableness'],
+                 norm_psychometrics['openness_to_experience'], norm_psychometrics['conscientiousness']])
+
+
+        logger.error("total:")
+        logger.error(total)
+
         self.distance_matrix = {
             "skills" : self.skillVal,
             "interests" : self.interestVal,
             "locations" : self.distance,
-            "psychometrics" : self.psychoVal,
-            "total" : self.skillVal + self.interestVal + self.distance + self.psychoVal / 4
+            "psychometrics" : norm_psychometrics,
+            "total" : total
         }
 
         return self.distance_matrix
 
+    def convertPsychometrics(self):
+        psychometrics = {}
+        for k,v in self.psychoVal.items():
+            psychometrics[k] = v/12
+        return psychometrics
 
 class JSort:
     def __init__(self, distances):
@@ -198,7 +221,9 @@ class Matching:
             for match in matches:
                 #Get candidate
                 candidate = Candidate.objects.get(id=match.id)
-                new_match = Match.objects.create(candidate=candidate, posting=self.posting)
+                posting = Posting.objects.get(id=self.posting['id'])
+                logger.error(match)
+                new_match = Match.objects.create(candidate=candidate, posting=posting, total_match_score = match.total)
 
         #now that the distance measurements have all been applied, sort the list and produce the top ten
         #potentially use nested sorts.

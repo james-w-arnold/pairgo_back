@@ -47,8 +47,6 @@ class LocationComparator:
         try:
             gmaps = googlemaps.Client(key=self.api_key)
             origin = self.posting_location.getLatLon()
-            logger = logging.getLogger(__name__)
-            logger.error(origin)
             destinations = []
 
             for loc in self.candidate_locations:
@@ -59,7 +57,6 @@ class LocationComparator:
                 origin,
                 destinations
             )
-            logger.error(distmatx)
             #from returned values, return the smallest distance
             #pprint.pprint(distmatx)
             rows = distmatx['rows']
@@ -74,8 +71,13 @@ class LocationComparator:
                                 shortest_row = val['distance']['value']
             if shortest_row > self.max_distance:
                 return 1
+            elif type(shortest_row) is None:
+                return 1
             else:
-                return shortest_row/self.max_distance
+                if shortest_row is not None:
+                    return shortest_row/self.max_distance
+                else:
+                    return 1
 
         except AssertionError as e:
             raise AssertionError('Locations need to be location object')

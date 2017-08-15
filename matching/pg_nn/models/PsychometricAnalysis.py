@@ -28,10 +28,10 @@ class PsychometricsComparator:
 
             result = {
                 "extroversion" : extro,
-                "openness" : openn,
+                "openness_to_experience" : openn,
                 "neuroticism" : neuro,
                 "agreeableness" : agree,
-                "consciousness" : consc
+                "conscientiousness" : consc
             }
 
             return result
