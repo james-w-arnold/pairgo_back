@@ -1,6 +1,8 @@
 from django.shortcuts import render
 import logging
 
+from commons.middleware.middleware import RequestLogViewMixin
+
 from django.core.exceptions import ValidationError
 
 from rest_framework import status, viewsets, mixins
@@ -13,7 +15,7 @@ from accounts.serializers import serializers
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 from accounts.permissions import permissions
-from accounts.models import Candidate, UserType, CandidatePsychometrics
+from accounts.models import Candidate, UserType, CandidatePsychometrics, CandidateEducation
 # Create your views here.
 
 class LoginView(ObtainAuthToken):
@@ -58,7 +60,7 @@ class UserTypeView(ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-class CreateCandidateView(ModelViewSet):
+class CreateCandidateView(ModelViewSet, RequestLogViewMixin):
     """
     Allows for creation of a candidate model
     """
@@ -93,7 +95,12 @@ class CandidatePsychometricsView(ModelViewSet):
 
     lookup_field = 'user'
 
+class EducationView(ModelViewSet):
+    permission_classes = (IsAuthenticated, )
+    serializer_class = serializers.EducationModelSerializer
+    queryset = CandidateEducation.objects.all()
 
+    lookup_field = 'user'
 
 
 

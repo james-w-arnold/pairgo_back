@@ -71,10 +71,6 @@ class DistanceMeasurement:
                  norm_psychometrics['neuroticism'], norm_psychometrics['agreeableness'],
                  norm_psychometrics['openness_to_experience'], norm_psychometrics['conscientiousness']])
 
-
-        logger.error("total:")
-        logger.error(total)
-
         self.distance_matrix = {
             "skills" : self.skillVal,
             "interests" : self.interestVal,
@@ -169,9 +165,7 @@ class Matching:
         posting_interests_objs = PostingInterest.objects.filter(posting__id=self.posting['id'])
         posting_interests = [instance.interest.name for instance in posting_interests_objs]
         posting_location_obj = PostingLocation.objects.get(posting__id=self.posting['id'])
-        logger.error(posting_location_obj)
         posting_location = posting_location_obj.location
-        logger.error(posting_location.lat)
         posting_psychometrics = {
             "extroversion": 0,
             "neuroticism": 0,
@@ -214,7 +208,7 @@ class Matching:
                                                                                 interests=interests,
                                                                                 locations=locations,
                                                                                 psychometrics=clean_psychometrics).getdistance()
-            logger.error(self.distances)
+
             matches = self.sortResults()
 
             #create a model to represent the new matches
@@ -222,7 +216,6 @@ class Matching:
                 #Get candidate
                 candidate = Candidate.objects.get(id=match.id)
                 posting = Posting.objects.get(id=self.posting['id'])
-                logger.error(match)
                 new_match = Match.objects.create(candidate=candidate, posting=posting, total_match_score = match.total)
 
         #now that the distance measurements have all been applied, sort the list and produce the top ten

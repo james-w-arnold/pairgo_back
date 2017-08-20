@@ -68,8 +68,6 @@ class UserTypeSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
     def create(self, validated_data):
-        logger = logging.getLogger(__name__)
-        logger.error(validated_data)
         userType = UserType(
             user = validated_data['user'],
             isCandidate = validated_data['isCandidate'],
@@ -186,6 +184,11 @@ class EducationSerializer(serializers.ModelSerializer):
         model = CandidateEducation
         exclude = ('id', 'user')
 
+class EducationModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CandidateEducation
+        fields = '__all__'
+
 class CandidateSerializer(serializers.ModelSerializer):
     first_name = serializers.ReadOnlyField(source='user.first_name')
     last_name  = serializers.ReadOnlyField(source='user.last_name')
@@ -215,7 +218,7 @@ class CandidateSerializer(serializers.ModelSerializer):
         _skills = validated_data.pop('skills', [])
         _interests = validated_data.pop('interests', [])
         _psychometrics = validated_data.pop('psychometrics', {})
-        _educations = validated_data.pop('educations', []   )
+        _educations = validated_data.pop('educations', [])
 
         if instance is not None:
             #updated an existing candidate
