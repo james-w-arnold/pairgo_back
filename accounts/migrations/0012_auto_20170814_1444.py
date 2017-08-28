@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-
+import accounts.models
 
 class Migration(migrations.Migration):
 
@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='candidate',
             name='id',
-            field=models.BigIntegerField(default=1516594819418157, editable=False, primary_key=True, serialize=False),
+            field=models.BigIntegerField(default=accounts.models.generate_id(), editable=False, primary_key=True, serialize=False),
         ),
     ]

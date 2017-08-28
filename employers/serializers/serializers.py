@@ -6,7 +6,7 @@ import logging
 class TeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Team
-        exclude = ('id',)
+        fields = '__all__'
 
 class EmployerPsychometricSerializer(serializers.ModelSerializer):
     class Meta:
@@ -89,6 +89,8 @@ class EmployerSerializer(serializers.ModelSerializer):
         return employer
 
     def update(self, instance, validated_data):
+        employer = models.Employer.objects.get(id=instance.id)
+
         company = validated_data.pop('company', {})
         team = validated_data.pop('team', {})
         psychometrics = validated_data.pop('psychometrics', {})
@@ -110,13 +112,21 @@ class EmployerSerializer(serializers.ModelSerializer):
                 instance.save()
 
         if psychometrics:
-            curr_psycho = models.EmployerPsychometrics.objects.get(employer=instance)
-            if curr_psycho.exists():
-                curr_psycho.delete()
-            psycho = EmployerPsychometricSerializer(**psychometrics, employer=instance).create()
+            logger = logging.getLogger(__name__)
+
+            emp_psycho = models.EmployerPsychometrics.objects.update_or_create(employer=employer, **psychometrics)
+
+            #curr_psycho = models.EmployerPsychometrics.objects.filter(employer=instance.id)
+
+            logger.error(emp_psycho)
+            #psycho = models.EmployerPsychometrics.objects.create(employer=employer, **psychometrics)
+            #psycho.save()
+            #psycho = EmployerPsychometricSerializer(**psychometrics, employer=instance.id).create()
 
         if interests:
             st.update_interests(instance, interests)
+        employer.save(force_update=True)
+        return employer
 
 #---------------------------------------------COMPANY--------------------------------#
 

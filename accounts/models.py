@@ -82,7 +82,6 @@ class Candidate(models.Model):
     Model to describe a student candidate within the system
     """
     id = models.BigIntegerField(primary_key=True,
-                                default=generate_id(),
                                 editable=False)
     about = models.TextField(blank=True)
     birth_date = models.DateField(null=True)
@@ -110,6 +109,11 @@ class Candidate(models.Model):
         'User',
         on_delete=models.CASCADE
     )
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.id = self.user.id
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return "{} {}".format(self.user.first_name, self.user.last_name)
@@ -188,6 +192,7 @@ class CandidatePsychometrics(models.Model):
         'Candidate',
         on_delete=models.CASCADE
     )
+
 
     def __str__(self):
         return "{} - Big 5".format(self.user)

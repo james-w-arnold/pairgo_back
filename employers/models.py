@@ -20,6 +20,10 @@ class Employer(models.Model):
         through='EmployerInterest',
         blank=True
     )
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.id = self.user.id
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return "{} {}".format(self.user.first_name, self.user.last_name)
@@ -142,6 +146,7 @@ class Employee(models.Model):
     Model to describe an employee of a company, this user type can be created by a employer lead and they can be
     assigned to teams
     """
+    id = models.BigIntegerField(primary_key=True, editable=False)
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -168,6 +173,10 @@ class Employee(models.Model):
         through='EmployeeInterest',
         blank=True
     )
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.id = self.user.id
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return "{} {}".format(self.user.first_name, self.user.last_name)

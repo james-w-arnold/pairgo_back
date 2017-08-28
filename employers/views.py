@@ -2,8 +2,8 @@ from django.shortcuts import render
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
-from employers.serializers.serializers import EmployerSerializer, TeamMembersModelSerializer, CompanySerializer, EmployeeSerializer, EmployeePsychometricsModelSerializer, TeamSerializer
-from employers.models import Employer, Company, Employee, EmployeePsychometrics, Team, TeamMember
+from employers.serializers.serializers import EmployerSerializer, TeamMembersModelSerializer, CompanySerializer, EmployeeSerializer, EmployeePsychometricsModelSerializer, TeamSerializer, EmployerPsychometricSerializer
+from employers.models import Employer, Company, Employee, EmployeePsychometrics, Team, TeamMember, EmployerPsychometrics
 from accounts.models import UserType
 from employers.permissions import IsEmployerOrNeither
 from rest_framework.generics import RetrieveAPIView, CreateAPIView
@@ -24,6 +24,8 @@ class CompanyView(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = CompanySerializer
     queryset = Company.objects.all()
+
+    lookup_field = 'company_lead'
 
 class EmployeeView(ModelViewSet):
     permission_classes = (IsAuthenticated, )
@@ -64,15 +66,16 @@ class InviteEmployee(APIView):
         if emails and team and company:
 
             team_obj = Team.objects.get(id=team)
+            comp_obj = Company.objects.get(company_lead__id=company)
             for email in emails:
 
-                link = "localhost:7897/employee?team={}&company={}&email={}".format(team_obj.team_name, company, email)
-                email_string = "Hi there\n You've been invited to join the {} team at {}!\nClick this link to signup: {}".format(team_obj.team_name, company, link)
+                link = "localhost:7897/employee?team={}&company={}&email={}".format(team_obj.id, comp_obj.id, email)
+                email_string = "Hi there\n You've been invited to join the {} team at {}!\nClick this link to signup: {}".format(team_obj.team_name, comp_obj.company_name, link)
 
                 mail = send_mail("You've been invited to a team on PairGo",
                           email_string,
                           from_email='james@pairgo.co.uk',
-                          recipient_list=[email]
+                          recipient_list=[email,]
                           )
             if mail==1:
                 return Response({"success": True})
@@ -81,3 +84,11 @@ class InviteEmployee(APIView):
         else:
             return Response({"data" : request.data, "emails" : emails},status=HTTP_400_BAD_REQUEST)
 
+
+class EmployerLeadPsychoViewset(ModelViewSet):
+    """
+    Allows you to access the psychometrics of an employer lead
+    """
+    permission_classes = (IsAuthenticated,)
+    queryset = EmployerPsychometrics.objects.all()
+    serializer_class = EmployerPsychometricSerializer
