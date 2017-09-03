@@ -27,7 +27,6 @@ class LoginView(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         response = super(LoginView, self).post(request, *args, **kwargs)
         token = Token.objects.get(key=response.data['token'])
-        #TODO: Add functionality to check which type user is
         return Response(
             {
                 'token': token.key,

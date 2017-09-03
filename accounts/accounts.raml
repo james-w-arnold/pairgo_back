@@ -1,0 +1,295 @@
+#%RAML 1.0
+title: A CRUD API for User and Candidate resources
+baseUri: http://localhost:8000/accounts
+version: v1
+
+/register:
+  description: Register a user instance
+  post:
+    body:
+      application/json:
+        type: object
+        example:
+          {
+          "email" : "example@django.com",
+          "first_name" : "James",
+          "last_name" : "Arnold",
+          "password" : "123"
+          }
+    responses:
+      201:
+        body:
+          application/json:
+            type: object
+            example:
+              {
+              "id" : "1442234234",
+              "email" : "example@django.com",
+              "first_name" : "James",
+              "last_name" : "Arnold"
+              }
+
+/login:
+  description: Login using user credentials to retrieve auth token.
+  post:
+    body:
+      application/json:
+        type: object
+        example: {
+
+          "email" : "example@django.com",
+          "password" : "123"
+          }
+    responses:
+      200:
+        body:
+          application/json:
+            type: object
+            example:
+              {
+              "id" : "1442234234",
+              "token" : "ab42t4ingwin3234"
+              }
+      400:
+        body:
+          application/json:
+            type: object
+            example: {
+
+              "non_field_errors" : [
+              "Unable to log in with the provided credentials"
+              ]
+              }
+
+/user_type:
+  description: Determine if the user is a candidate or an employer
+  /{user_id}:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              type: object
+              example: {
+                "id": "123412412",
+                "user" : "123412412",
+                "isCandidate" : "true",
+                "isEmployer" : "false"
+                }
+
+/candidates:
+  description: Manipulate all the models associated with the candidate model
+  post:
+    description: Post the information about the candidates
+    body:
+      application/json:
+        type: object
+        example: {
+          "locations" : [
+            {
+            "title" : "example_area",
+            "lat" : "4.5676",
+            "lon" : "3.6543"
+            }
+          ],
+          "educations" : [
+            {
+            "institution" : "University of East Anglia",
+            "degree" : "Computer Science",
+            "level" : "M",
+            "grade" : "1",
+            "completed" : "true"
+          }
+          ],
+          "skills" : [
+            {
+            "name": "Java",
+            }
+          ],
+          "interests" : [
+            {
+            "name" : "Swimming"
+            }
+          ],
+          "about" : "Small BIO about myself",
+          "birth_date" : "30-01-1995",
+          "right_to_work" : "true",
+          "linkedin_url" : "www.linkedin.com/example",
+          "user": "1442234234"
+          }
+    responses:
+      201:
+        body:
+          application/json:
+            example: {
+              "id" : "1442234234",
+              "email" : "example@django.com",
+              "first_name" : "James",
+              "last_name" : "Arnold",
+              "locations" : [
+                {
+                "title" : "example_area",
+                "lat" : "4.5676",
+                "lon" : "3.6543"
+                }
+              ],
+              "educations" : [
+                {
+                "institution" : "University of East Anglia",
+                "degree" : "Computer Science",
+                "level" : "M",
+                "grade" : "1",
+                "completed" : "true"
+              }
+              ],
+              "skills" : [
+                {
+                "name": "Java",
+                }
+              ],
+              "interests" : [
+                {
+                "name" : "Swimming"
+                }
+              ],
+              "about" : "Small BIO about myself",
+              "birth_date" : "30-01-1995",
+              "right_to_work" : "true",
+              "linkedin_url" : "www.linkedin.com/example",
+              "user": "1442234234"
+              }
+  /{candidate_id}:
+    description: Get the details of a specific
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              type: object
+              example: {
+                "id" : "1442234234",
+                "email" : "example@django.com",
+                "first_name" : "James",
+                "last_name" : "Arnold",
+                "locations" : [
+                  {
+                  "title" : "example_area",
+                  "lat" : "4.5676",
+                  "lon" : "3.6543"
+                  }
+                ],
+                "educations" : [
+                  {
+                  "institution" : "University of East Anglia",
+                  "degree" : "Computer Science",
+                  "level" : "M",
+                  "grade" : "1",
+                  "completed" : "true"
+                }
+                ],
+                "skills" : [
+                  {
+                  "name": "Java",
+                  }
+                ],
+                "interests" : [
+                  {
+                  "name" : "Swimming"
+                  }
+                ],
+                "about" : "Small BIO about myself",
+                "birth_date" : "30-01-1995",
+                "right_to_work" : "true",
+                "linkedin_url" : "www.linkedin.com/example",
+                "user": "1442234234"
+                }
+
+/candidate/psychometrics:
+  post:
+    body:
+      application/json:
+        type: object
+        example: {
+          "user" : "candidate_id",
+          "strength" : "1",
+          "extroversion" : "-1",
+          "neuroticism" : "1",
+          "openness_to_experience" : "0",
+          "agreeableness" : "0",
+          "conscientiousness" : "-2"
+          }
+    responses:
+      200:
+        body:
+          application/json:
+            type: object
+            example: {
+              "id" : "1",
+              "user" : "candidate_id",
+              "strength" : "1",
+              "extroversion" : "-1",
+              "neuroticism" : "1",
+              "openness_to_experience" : "0",
+              "agreeableness" : "0",
+              "conscientiousness" : "-2"
+              }
+  /{user_id}:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              type: object
+              example: {
+                "id" : "1",
+                "user" : "candidate_id",
+                "strength" : "1",
+                "extroversion" : "-1",
+                "neuroticism" : "1",
+                "openness_to_experience" : "0",
+                "agreeableness" : "0",
+                "conscientiousness" : "-2"
+                }
+/candidate/education:
+  /{user_id}:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              type: object
+              example: {
+                "id": "123",
+                "institution" : "University of East Anglia",
+                "degree" : "Computer Science",
+                "level" : "M",
+                "grade" : "1",
+                "completed" : "true",
+                "user" : "123142"
+                }
+  post:
+    body:
+      application/json:
+        type: object
+        example: {
+          "institution" : "University of East Anglia",
+          "degree" : "Computer Science",
+          "level" : "M",
+          "grade" : "1",
+          "completed" : "true",
+          "user" : "123142"
+          }
+    responses:
+      201:
+        body:
+          application/json:
+            type: object
+            example: {
+              "id" : "1",
+              "institution" : "University of East Anglia",
+              "degree" : "Computer Science",
+              "level" : "M",
+              "grade" : "1",
+              "completed" : "true",
+              "user" : "123142"
+              }

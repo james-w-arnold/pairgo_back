@@ -88,6 +88,7 @@ class DistanceMeasurement:
         return psychometrics
 
 class JSort:
+    """Variation of insertion sort, used to produce a list of most similar candidates"""
     def __init__(self, distances):
         self.distances = distances
         self.matches = []
@@ -116,6 +117,8 @@ class JSort:
 
 
 class Distance:
+    """This class is used to link the scores assigned to candidates with their id
+    so they can be compared using JSort"""
     def __init__(self, candID, total, left=None, right=None):
         self.id = candID
         self.total = total

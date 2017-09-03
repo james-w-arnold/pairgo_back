@@ -1,6 +1,7 @@
 from difflib import SequenceMatcher
 
 class Skill:
+    """The wrapper class for a skill to be used in comparison"""
     def __init__(self, skill):
         self.skill = skill
 
@@ -12,7 +13,7 @@ class Skill:
 
 
 class SkillComparator:
-
+    """Responsible for comparing the skill objects"""
     def __init__(self):
         self.candidate_skills = []
         self.posting_skills   = []

@@ -58,6 +58,7 @@ THIRD_PARTY_APPS = (
     'rest_framework.authtoken',
     'rest_framework_swagger',
     'corsheaders',
+    'django_extensions',
 )
 
 INSTALLED_APPS = DJANGO_APPS + PAIRGO_DJANGO_APPS + THIRD_PARTY_APPS

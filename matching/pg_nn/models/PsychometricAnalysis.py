@@ -1,6 +1,10 @@
 import logging
 
 class PsychometricIndex:
+    """
+    This index is used to catalog the psychometric profile
+     of candidates and posting in a format which can be compared.
+    """
     def __init__(self, psychometrics):
         self.extroversion = psychometrics.get('extroversion', 0)
         self.openness     = psychometrics.get('openness_to_experience', 0)
@@ -9,13 +13,14 @@ class PsychometricIndex:
         self.consciousness = psychometrics.get('conscientiousness', 0)
         self.strength = psychometrics.get('strength', 1)
 
-
 class PsychometricsComparator:
+    """
+    This class is used to measure the distance between two PsychmetricIndex vectors
+    """
     def __init__(self, candidate_psy_index, posting_psy_index, settings='similar'):
         self.candidate = candidate_psy_index
         self.posting = posting_psy_index
         self.settings = settings
-
 
     def run(self):
         if self.settings == 'similar':
