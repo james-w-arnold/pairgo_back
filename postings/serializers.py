@@ -132,5 +132,6 @@ class PostingSerializer(serializers.ModelSerializer):
 
         return posting
 
+class MultiplePostingSerializer:
 
-
+    postings = PostingSerializer(many=True)

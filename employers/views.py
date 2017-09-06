@@ -42,6 +42,7 @@ class TeamView(ModelViewSet):
     permission_classes = (IsAuthenticated, ) #todo: add isemployerLead to this.
     serializer_class = TeamSerializer
     queryset = Team.objects.all()
+    lookup_field = 'company'
 
 class ListTeamMembers(RetrieveAPIView):
     """
@@ -69,7 +70,7 @@ class InviteEmployee(APIView):
             comp_obj = Company.objects.get(company_lead__id=company)
             for email in emails:
 
-                link = "localhost:7897/employee?team={}&company={}&email={}".format(team_obj.id, comp_obj.id, email)
+                link = "localhost:4200/invite?team={}&company={}&email={}".format(team_obj.id, comp_obj.id, email)
                 email_string = "Hi there\n You've been invited to join the {} team at {}!\nClick this link to signup: {}".format(team_obj.team_name, comp_obj.company_name, link)
 
                 mail = send_mail("You've been invited to a team on PairGo",
