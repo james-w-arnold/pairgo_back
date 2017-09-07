@@ -168,5 +168,5 @@ STATIC_URL = '/static/'
 EMAIL_HOST = 'smtp.office365.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'james@pairgo.co.uk'
-EMAIL_HOST_PASSWORD = 'PointerToArray2!'
+EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = True

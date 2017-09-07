@@ -93,3 +93,4 @@ class EmployerLeadPsychoViewset(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = EmployerPsychometrics.objects.all()
     serializer_class = EmployerPsychometricSerializer
+    lookup_field='employer'
