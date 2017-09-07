@@ -11,7 +11,7 @@ class TeamSerializer(serializers.ModelSerializer):
 class EmployerPsychometricSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.EmployerPsychometrics
-        exclude = ('id', 'employer')
+        exclude = ('id',)
 
 
 class EmployerInterestSerializer(serializers.Serializer):
