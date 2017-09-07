@@ -1,6 +1,6 @@
 from django.conf.urls import url, include
 from rest_framework.routers import DefaultRouter
-from employers.views import EmployerLeadView, CompanyView, EmployeeView, ListTeamMembers, TeamView, InviteEmployee, EmployerLeadPsychoViewset, EmployeePsychometricsView
+from employers.views import EmployerLeadView, CompanyView, EmployeeView, ListTeamMembers, TeamView, InviteEmployee, EmployerLeadPsychoViewset, EmployeePsychometricsView, GetTeamByCompanyView
 
 router = DefaultRouter()
 router.register(r'employer_lead', EmployerLeadView, base_name='employer_lead')
@@ -15,4 +15,6 @@ urlpatterns = [
     url(r'^', include(router.urls)),
     url(r'^teammembers/(?P<team>[\w-]+)/$', ListTeamMembers.as_view(), name='list_teammembers'),
     url(r'^invite', InviteEmployee.as_view()),
+    url(r'^company_team_lookup/(?P<company>[\w-]+)$', GetTeamByCompanyView.as_view(), name='get_team_by_company'),
+
 ]
