@@ -45,7 +45,7 @@ class TeamView(ModelViewSet):
 
 class GetTeamByCompanyView(APIView):
     def get(self, request, company):
-        company = Company.objects.get(id = company)
+        company = Company.objects.get(company_lead_id=company)
         teams = Team.objects.filter(company=company)
         serializers = TeamSerializer(teams, many=True)
 

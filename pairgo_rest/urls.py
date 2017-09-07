@@ -26,4 +26,5 @@ urlpatterns = [
     url(r'^employers/' , include('employers.urls', namespace='employers')),
     url(r'^postings/', include('postings.urls', namespace='postings')),
     url(r'^messaging/', include('messaging.urls', namespace='messaging')),
+    url(r'^matching/', include('matching.urls', namespace='matching'))
 ]
